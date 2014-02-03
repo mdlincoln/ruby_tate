@@ -1,15 +1,28 @@
 require 'mongo'
 require 'json'
 
-collection = Mongo::MongoClient.new['arth']['tate_artists']
+database = Mongo::MongoClient.new['tate']
+artists_collection = database['artists']
+artworks_collection = database['artworks']
 
-file_list = Dir.glob('artists/**/*.json')
+artist_list = Dir.glob('artists/**/*.json')
+artworks_list = Dir.glob('artworks/**/*.json')
 
-file_list.each do |file|
+artist_list.each do |file|
 	data = JSON.parse(File.read(file))
-	# data['_id'] = data['acno']
-	collection.insert(data)
+	id = data['id']
+	data['_id'] = id
+	artists_collection.update({'_id' => id }, data, :upsert => true)
 	puts "#{file} inserted"
 end
+
+artworks_list.each do |file|
+	data = JSON.parse(File.read(file))
+	id = data['id']
+	data['_id'] = id
+	artworks_collection.update({'_id' => id }, data, :upsert => true)
+	puts "#{file} inserted"
+end
+
 
 puts "Done"
